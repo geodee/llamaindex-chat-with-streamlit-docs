@@ -21,7 +21,29 @@ def load_data():
     with st.spinner(text="Loading and indexing the content – hang tight! This should take 1-2 minutes."):
         reader = SimpleDirectoryReader(input_dir="./databbe", recursive=True)
         docs = reader.load_data()
-        service_context = ServiceContext.from_defaults(llm=OpenAI(model="gpt-3.5-turbo", temperature=0.5, system_prompt="The content supplied will contain episodes of the Best Boss Ever podcast. They're labelled with the episode number, episode name, host, and guest. The format is as follows: Episode number: [number] Episode name: [name] Host: [host] Guest: [guest]. Each guest's commentary is labelled according to who is speaking. You are an expert on the Best Boss Ever Podcast and your job is to answer questions about the content of all of the podcasts that have been given to you. Assume that all questions are related to the podcasts. Keep your answers based on facts – do not hallucinate features. "))
+        service_context = ServiceContext.from_defaults(llm=LlamaCPP(model_url="https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q5_K_M.gguf",
+    
+    # optionally, you can set the path to a pre-downloaded model instead of model_url
+    model_path=None,
+    
+    temperature=0.0,
+    max_new_tokens=1024,
+    
+    # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+    context_window=3900,  # note, this sets n_ctx in the model_kwargs below, so you don't need to pass it there.
+    
+    # kwargs to pass to __call__()
+    generate_kwargs={},
+    
+    # kwargs to pass to __init__()
+    # set to at least 1 to use GPU
+    model_kwargs={"n_gpu_layers": 4}, # I need to play with this and see if it actually helps
+    
+    # transform inputs into Llama2 format
+    messages_to_prompt=messages_to_prompt,
+    completion_to_prompt=completion_to_prompt,
+    verbose=True,
+    ))
         index = VectorStoreIndex.from_documents(docs, service_context=service_context)
         return index
 

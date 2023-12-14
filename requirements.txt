@@ -1,5 +1,5 @@
 streamlit
 openai
-llama-index
+llama-index==v0.8.67
 nltk
 pypdf
